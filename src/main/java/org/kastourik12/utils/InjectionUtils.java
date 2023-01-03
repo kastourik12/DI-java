@@ -22,10 +22,11 @@ public class InjectionUtils {
     public static void autowire(Injector injector, Class<?> classz, Object classInstance)
             throws InstantiationException, IllegalAccessException {
 
-        Collection<Field> fields = Fields.findAllAndMakeThemAccessible(
-                FieldCriteria.forEntireClassHierarchy().allThoseThatMatch(field ->
-                        field.isAnnotationPresent(Autowired.class)), classz
-        );
+        Collection<Field> fields = Fields
+                                   .findAllAndMakeThemAccessible(
+                                           FieldCriteria.forEntireClassHierarchy()
+                                                   .allThoseThatMatch(field -> field.isAnnotationPresent(Autowired.class))
+                                           , classz);
         for (Field field : fields) {
             String qualifier = field.isAnnotationPresent(Qualifier.class)
                     ? field.getAnnotation(Qualifier.class).value()

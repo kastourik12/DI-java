@@ -9,6 +9,7 @@ import org.kastourik12.utils.InjectionUtils;
 
 import javax.management.RuntimeErrorException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,7 @@ public class Injector {
         }
     }
 
-    public static <T> T getService(Class<T> classz) {
+    public static <T> T getComponent(Class<T> classz) {
         try {
             return injector.getBeanInstance(classz);
         } catch (Exception e) {
@@ -57,15 +58,13 @@ public class Injector {
     private void initFramework(Class<?> mainClass)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException {
         Class<?>[] classes = getClasses(mainClass.getPackage().getName(), true);
-        ComponentContainer componentConatiner = ComponentContainer.getInstance();
-        ClassHunter classHunter = componentConatiner.getClassHunter();
+        ComponentContainer componentContainer = ComponentContainer.getInstance();
+        ClassHunter classHunter = componentContainer.getClassHunter();
         String packageRelPath = mainClass.getPackage().getName().replace(".", "/");
         try (ClassHunter.SearchResult result = classHunter.findBy(
                 SearchConfig.forResources(
                         packageRelPath
-                ).by(ClassCriteria.create().allThoseThatMatch(cls -> {
-                    return cls.getAnnotation(Component.class) != null;
-                }))
+                ).by(ClassCriteria.create().allThoseThatMatch(cls -> cls.getAnnotation(Component.class) != null))
         )) {
             Collection<Class<?>> types = result.getClasses();
             for (Class<?> implementationClass : types) {
@@ -90,11 +89,12 @@ public class Injector {
     }
 
     /**
+     *
      * Get all the classes for the input package
      */
     public Class<?>[] getClasses(String packageName, boolean recursive) throws ClassNotFoundException, IOException {
-        ComponentContainer componentConatiner = ComponentContainer.getInstance();
-        ClassHunter classHunter = componentConatiner.getClassHunter();
+        ComponentContainer componentContainer = ComponentContainer.getInstance();
+        ClassHunter classHunter = componentContainer.getClassHunter();
         String packageRelPath = packageName.replace(".", "/");
         SearchConfig config = SearchConfig.forResources(
                 packageRelPath
